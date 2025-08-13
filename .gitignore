@@ -1,0 +1,28 @@
+# Ignore Python virtual environment
+.venv/
+venv/
+backend/venv/
+venv/
+*.pyd
+*.dll
+*.lib
+*.dat
+
+# Abaikan folder YOLOv5
+backend/yolov5/
+
+# Ignore dataset folder
+backend/dataset/
+
+# Ignore files di backend yang berat/hasil model
+*.pkl
+*.pt
+*.dat
+*.dll
+*.lib
+*.pyd
+
+# Cache Python
+__pycache__/
+*.pyc
+*.log
