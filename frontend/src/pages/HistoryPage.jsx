@@ -1,65 +1,101 @@
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Calendar, Clock, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
-export default function HistoryPage(){
-  const [history, setHistory] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function HistoryPage() {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{
-    async function load(){
-      const userId = localStorage.getItem('user_id')
+  useEffect(() => {
+    async function loadHistory() {
+      const userId = localStorage.getItem("user_id");
       if (!userId) {
-        console.error("User ID tidak ditemukan di localStorage")
-        setLoading(false)
-        return
+        console.error("User ID tidak ditemukan di localStorage");
+        setLoading(false);
+        return;
       }
+
       try {
-        const res = await axios.get(`http://localhost:8000/history/${userId}`)
-        setHistory(res.data)
+        const res = await axios.get(`http://localhost:8000/history/${userId}`);
+        setHistory(res.data);
       } catch (err) {
-        console.error("Gagal ambil history:", err)
+        console.error("Gagal ambil history:", err);
       }
-      setLoading(false)
+
+      setLoading(false);
     }
-    load()
-  },[])
+
+    loadHistory();
+  }, []);
+
+  const getStatusIcon = (status) => {
+    const s = status.toLowerCase();
+    if (s === "hadir") return <CheckCircle className="w-4 h-4 mr-1 text-green-700" />;
+    if (s === "terlambat") return <AlertTriangle className="w-4 h-4 mr-1 text-red-700" />;
+    return <XCircle className="w-4 h-4 mr-1 text-gray-600" />;
+  };
 
   return (
-    <div className="bg-white p-6 rounded shadow max-w-3xl mx-auto">
-        <h2 className="text-black text-xl font-semibold mb-3">Riwayat Absen</h2>
-        {loading ? (
-            <div>Loading...</div>
-        ) : (
-            <table className="w-full text-sm border-collapse text-black">
-            <thead className="bg-gray-200 text-black">
-                <tr className="text-left border-b">
-                <th>Tanggal</th>
-                <th>Waktu</th>
-                <th>Status</th>
-                </tr>
+    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg max-w-5xl mx-auto mt-8">
+      <h2 className="text-black text-2xl font-bold mb-6 text-center">Riwayat Absensi</h2>
+
+      {loading ? (
+        <div className="text-center text-gray-500">Loading...</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold flex items-center gap-2 whitespace-nowrap">
+                  <Calendar className="w-5 h-5" /> Tanggal
+                </th>
+                <th className="px-4 py-3 text-left text-gray-700 font-semibold flex items-center gap-2 whitespace-nowrap">
+                  <Clock className="w-5 h-5" /> Waktu
+                </th>
+                <th className="px-4 py-3 text-center text-gray-700 font-semibold whitespace-nowrap">
+                  Status
+                </th>
+              </tr>
             </thead>
             <tbody>
-                {history.length === 0 && (
+              {history.length === 0 ? (
                 <tr>
-                    <td colSpan={3} className="text-center">
-                    Belum ada riwayat.
-                    </td>
+                  <td colSpan={3} className="text-center py-6 text-gray-500">
+                    Belum ada riwayat absensi.
+                  </td>
                 </tr>
-                )}
-                {history.map((r, idx) => {
-                console.log("Riwayat data:", r); // Debug respons backend
-                return (
-                    <tr key={idx} className="border-b">
-                    <td>{r.tanggal || r.date || "-"}</td>
-                    <td>{r.waktu || r.time || "-"}</td>
-                    <td>{r.status || r.keterangan || "-"}</td>
+              ) : (
+                history.map((r, idx) => {
+                  const status = r.status || r.keterangan || "-";
+                  return (
+                    <tr
+                      key={idx}
+                      className="border-b last:border-b-0 hover:bg-gray-50 transition"
+                    >
+                      <td className="px-4 py-3 text-gray-800 text-sm">{r.tanggal || r.date || "-"}</td>
+                      <td className="px-4 py-3 text-gray-800 text-sm">{r.waktu || r.time || "-"}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold ${
+                            status.toLowerCase() === "hadir"
+                              ? "bg-green-100 text-green-700"
+                              : status.toLowerCase() === "terlambat"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {getStatusIcon(status)}
+                          {status}
+                        </span>
+                      </td>
                     </tr>
-                );
-                })}
+                  );
+                })
+              )}
             </tbody>
-            </table>
-        )}
+          </table>
+        </div>
+      )}
     </div>
-
-  )
+  );
 }
