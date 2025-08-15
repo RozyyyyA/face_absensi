@@ -5,7 +5,6 @@ import RegisterPage from "./pages/RegisterPage"
 import FaceRegisterPage from "./pages/FaceRegisterPage"
 import AbsensiPage from "./pages/AbsensiPage"
 import HistoryPage from "./pages/HistoryPage"
-import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
 import Sidebar from "./components/Sidebar"
 
@@ -21,7 +20,6 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Navbar />
       <div className="flex flex-1">
         {/* Sidebar hanya muncul jika login dan bukan login/register */}
         {token && !hideSidebarOn.includes(location.pathname) && <Sidebar />}
