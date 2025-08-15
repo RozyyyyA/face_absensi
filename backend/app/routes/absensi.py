@@ -1,7 +1,7 @@
 from unittest import result
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, time
 from app.database import get_db
 from app import models
 from app.yolov5_svm import recognize_face
@@ -31,7 +31,6 @@ async def absensi(
         print("current_user.npm:", current_user.npm)
 
         # Validasi wajah cocok dengan user yang login
-        # Cek kecocokan berdasarkan nama → npm dari DB
         recognized_user = db.query(models.User).filter(models.User.nama == recognized_npm).first()
 
         if current_user.nama != recognized_npm:
@@ -50,25 +49,33 @@ async def absensi(
         if existing_absen:
             raise HTTPException(status_code=400, detail="📅 Anda sudah absen hari ini")
 
+        # Tentukan status hadir atau terlambat
+        now_time = datetime.now().time()
+        batas_hadir = time(8, 0, 0)  # jam 08:00
+
+        if now_time <= batas_hadir:
+            status_absen = "Hadir"
+        else:
+            status_absen = "Terlambat"
+
         # Simpan data absen
         absen = models.Absensi(
             user_id=current_user.id,
             tanggal=today,
-            waktu=datetime.now().time(),
-            status="Hadir"
+            waktu=now_time,
+            status=status_absen
         )
         db.add(absen)
         db.commit()
         db.refresh(absen)
 
         return {
-            "message": f"✅ {current_user.nama} berhasil absen",
+            "message": f"✅ {current_user.nama} berhasil absen ({status_absen})",
             "npm": current_user.npm,
             "tanggal": str(absen.tanggal),
             "waktu": str(absen.waktu),
             "status": absen.status
         }
-
 
     except HTTPException as http_exc:
         raise http_exc
